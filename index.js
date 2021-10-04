@@ -1,15 +1,16 @@
 const express = require("express");
 const app = express();
 
-const port = 4200;
+const port = 3000;
 const origin = "http://localhost:8080";
 
 var stats = {
   connections: [],
+  messages: []
 };
 
 const server = app.listen(port, () => {
-  console.log("listening for requests on port " + port);
+  console.log("Server listening for requests on port " + port);
 });
 
 const io = require("socket.io")(server, {
@@ -29,10 +30,15 @@ io.on("connection", (socket) => {
     socket.handshake.address
   );
 
-  socket.emit("greetings", "Hello from the backend!");
 
+  socket.emit("greetings", "Hello from the backend!");
+  socket.emit("current_connected_count", stats.connections.length)
+  socket.emit("chat_old_messages", stats.messages)
+
+  // send message to everyone
   socket.on("chat_message", (message) => {
-    io.emit("chat_message", socket.id, message)
+    stats.messages.push({id: socket.id, msg:replaceLineBreaksWithBr(message)})
+    io.emit("chat_message", socket.id, replaceLineBreaksWithBr(message))
   })
 
   socket.on("disconnect", () => {
@@ -46,3 +52,6 @@ io.on("connection", (socket) => {
   });
 });
 
+function replaceLineBreaksWithBr(input) {
+  return input.replace(/(?:\r\n|\r|\n)/g, "<br>");
+}
