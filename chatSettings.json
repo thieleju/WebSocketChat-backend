@@ -1,0 +1,30 @@
+{
+  "menu_name": "Socket.io Chat App Menu ",
+  "connections": {
+    "current": [],
+    "archive": []
+  },
+  "channels": [
+    {
+      "id": 0,
+      "title": "Lounge 1",
+      "icon": "chat-processing",
+      "channelID": "lounge-1",
+      "messages": []
+    },
+    {
+      "id": 1,
+      "title": "Lounge 2",
+      "icon": "chat-processing",
+      "channelID": "lounge-2",
+      "messages": []
+    },
+    {
+      "id": 2,
+      "title": "Lounge 3",
+      "icon": "chat-processing",
+      "channelID": "lounge-3",
+      "messages": []
+    }
+  ]
+}
