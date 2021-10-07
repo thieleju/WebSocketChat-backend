@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
   );
 
   // add user object
-  stats.connections.push({ id: socket.id, username: "" });
+  stats.connections.push({ id: socket.id, username: "", color: "" });
   
   // emit channel details for client on Load
   var details = {
@@ -53,13 +53,14 @@ io.on("connection", (socket) => {
   // listen for message send event
   socket.on("add_message_to_channel", (data) => {
     try {
+      var findUser = stats.connections.find((el) => el.id == socket.id)
       var messageObj = {
         socketID: socket.id,
         socketAddress: socket.handshake.address,
         text: replaceLineBreaksWithBr(data.message),
         user: {
-          name: stats.connections.find((el) => el.id == socket.id).username,
-          color: data.user.color,
+          name: findUser.username,
+          color: findUser.color,
         },
       };
       
@@ -109,6 +110,18 @@ io.on("connection", (socket) => {
   socket.on("update_username", (un) => {
     try {
       stats.connections.find(el => el.id == socket.id).username = un
+      // send new user list
+      io.emit("userlist", stats.connections)
+    } catch (error) {
+      console.log(error);
+      io.emit("error", error);
+    }
+  });
+
+  // listen for color change 
+  socket.on("update_color", (col) => {
+    try {
+      stats.connections.find(el => el.id == socket.id).color = col
       // send new user list
       io.emit("userlist", stats.connections)
     } catch (error) {
