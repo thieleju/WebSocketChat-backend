@@ -25,7 +25,6 @@ const io = require("socket.io")(server, {
 var chat = require("./chatSettings.json");
 
 io.on("connection", (socket) => {
-  stats.connections.push({ id: socket.id });
   console.log(
     stats.connections.length,
     "✅",
@@ -33,8 +32,10 @@ io.on("connection", (socket) => {
     socket.handshake.address
   );
 
-  socket.emit("greetings", "Hello from the server!");
-
+  // add user object
+  stats.connections.push({ id: socket.id, username: "" });
+  
+  // emit channel details for client on Load
   var details = {
     menu_name: chat.menu_name,
     channels: [],
@@ -49,6 +50,7 @@ io.on("connection", (socket) => {
   });
   socket.emit("channel_details", details);
 
+  // listen for message send event
   socket.on("add_message_to_channel", (data) => {
     try {
       var messageObj = {
@@ -56,7 +58,7 @@ io.on("connection", (socket) => {
         socketAddress: socket.handshake.address,
         text: replaceLineBreaksWithBr(data.message),
         user: {
-          name: data.user.name,
+          name: stats.connections.filter((el) => el.id !== socket.id).username,
           color: data.user.color,
         },
       };
@@ -84,6 +86,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // listen for message updates and emit update
   socket.on("update_messages_for_channel", (channelID) => {
     try {
       var channel = chat.channels.find((el) => channelID == el.channelID);
@@ -101,8 +104,23 @@ io.on("connection", (socket) => {
     }
   });
 
+  // listen for username change 
+  socket.on("update_username", (un) => {
+    try {
+      stats.connections.find(el => el.id == socket.id).username = un
+      // send new user list
+      io.emit("userlist", stats.connections)
+    } catch (error) {
+      console.log(error);
+      io.emit("error", error);
+    }
+  });
+  
+  // user disconnected
   socket.on("disconnect", () => {
     stats.connections = stats.connections.filter((el) => el.id !== socket.id);
+    // send new user list
+    io.emit("userlist", stats.connections)
     console.log(
       stats.connections.length,
       "❌",
