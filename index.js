@@ -58,10 +58,11 @@ io.on("connection", (socket) => {
         socketAddress: socket.handshake.address,
         text: replaceLineBreaksWithBr(data.message),
         user: {
-          name: stats.connections.filter((el) => el.id !== socket.id).username,
+          name: stats.connections.find((el) => el.id == socket.id).username,
           color: data.user.color,
         },
       };
+      
       // check if messages are at maximum
       var channel = chat.channels.find((el) => data.channelID == el.channelID)
       if (channel.messages.length >= maxMessagesPerChannel) {
