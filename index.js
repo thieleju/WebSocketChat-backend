@@ -1,9 +1,14 @@
 const express = require("express");
 const app = express();
+const helmet = require('helmet');
+// set dynamic env filename
+require('dotenv').config({ path: `./.env.${process.env.NODE_ENV}` })
 
-const port = 3000;
-const origin = "http://localhost:8080";
-const maxMessagesPerChannel = 100;
+app.use(helmet())
+
+const port = process.env.APP_PORT;
+const origin = process.env.APP_ORIGIN;
+const maxMessagesPerChannel = process.env.APP_MAX_MESSAGES
 
 var stats = {
   connections: [],
