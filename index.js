@@ -16,13 +16,14 @@ var stats = {
   messages: [],
 };
 
+// TODO FIX CORS
+
 app.use(require("cors")());
 
 app
   // middleware able to get requestors ip by req.ip
   .set("trust proxy", true)
   // use cors
-  .use(require("cors")())
   .use(express.json())
   .use(
     express.urlencoded({
@@ -85,20 +86,22 @@ io.on("connection", (socket) => {
   // add user object
   stats.connections.push({ id: socket.id, username: "", color: "" });
 
-  // emit channel details for client on Load
-  var details = {
-    menu_name: chat.menu_name,
-    channels: [],
-  };
-  chat.channels.forEach((el) => {
-    details.channels.push({
-      id: el.id,
-      title: el.title,
-      icon: el.icon,
-      channelID: el.channelID,
+  socket.on("trigger_update", () => {
+    // emit channel details for client on Load
+    var details = {
+      menu_name: chat.menu_name,
+      channels: [],
+    };
+    chat.channels.forEach((el) => {
+      details.channels.push({
+        id: el.id,
+        title: el.title,
+        icon: el.icon,
+        channelID: el.channelID,
+      });
     });
+    io.emit("channel_details", details);
   });
-  socket.emit("channel_details", details);
 
   // listen for message send event
   socket.on("add_message_to_channel", (data) => {
