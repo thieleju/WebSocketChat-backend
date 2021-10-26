@@ -16,8 +16,14 @@ var stats = {
   messages: [],
 };
 
-// TODO FIX CORS
+// TODO delete later
+const FPS = 30;
+const cv = require("opencv4nodejs");
+const wCap = new cv.VideoCapture(0);
+wCap.set(cv.CAP_PROP_FRAME_WIDTH, 1280);
+wCap.set(cv.CAP_PROP_FRAME_HEIGHT, 720);
 
+// TODO FIX CORS
 app.use(require("cors")());
 
 app
@@ -82,6 +88,13 @@ io.on("connection", (socket) => {
     socket.id,
     socket.handshake.address
   );
+
+  // TODO delete later
+  setInterval(() => {
+    const frame = wCap.read();
+    const image = cv.imencode(".jpg", frame).toString("base64");
+    io.emit("image", image);
+  }, 1000 / FPS);
 
   // add user object
   stats.connections.push({ id: socket.id, username: "", color: "" });
